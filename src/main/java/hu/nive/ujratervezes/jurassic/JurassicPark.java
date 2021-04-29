@@ -1,9 +1,6 @@
 package hu.nive.ujratervezes.jurassic;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,17 +18,17 @@ public class JurassicPark {
     }
 
     public List<String> checkOverpopulation() {
-        return getResult("SELECT breed FROM dinosaur WHERE expected < actual ORDER BY breed");
-    }
-
-    public List<String> getResult(String SQL) {
-        List<String> result = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            ResultSet resultSet = connection.createStatement().executeQuery(SQL);
-            if (resultSet.next()) return Collections.singletonList(resultSet.getString(1));
+        List<String> overpopulation = new ArrayList<>();
+        String sql = "SELECT breed FROM dinosaur WHERE expected < actual ORDER BY breed";
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                overpopulation.add(resultSet.getString(1));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return result;
+        return overpopulation;
     }
 }
